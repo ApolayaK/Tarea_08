@@ -1,87 +1,115 @@
 <?php
-
 namespace App\Controllers;
 
+use App\Controllers\BaseController;
 use App\Models\AveriaModel;
-use App\Libraries\Notify;
-use CodeIgniter\Controller;
 
-class Averias extends Controller
+class Averias extends BaseController
 {
-  protected $averiaModel;
-
-  public function __construct()
-  {
-    $this->averiaModel = new AveriaModel();
-  }
-
-  /**
-   * Listar todas las averías pendientes
-   */
   public function index()
   {
-    $data['averias'] = $this->averiaModel
-      ->where('status', 'pendiente')
-      ->findAll();
-
-    return view('averias/listar', $data);
+    return view('averias/listar');
   }
 
-  /**
-   * Mostrar el formulario para registrar una nueva avería
-   */
   public function registrar()
   {
     return view('averias/registrar');
   }
 
-  /**
-   * Guardar una nueva avería
-   */
-  public function guardar()
+  // Nueva vista para solucionados
+  public function solucionados()
   {
-    // Validar datos
-    if (
-      !$this->validate([
-        'cliente' => 'required|max_length[50]',
-        'problema' => 'required|max_length[100]'
-      ])
-    ) {
-      return redirect()->back()
-        ->withInput()
-        ->with('errors', $this->validator->getErrors());
-    }
-
-    // Preparar datos de la nueva avería
-    $averiaData = [
-      'cliente' => $this->request->getPost('cliente'),
-      'problema' => $this->request->getPost('problema'),
-      'fechahora' => date('Y-m-d H:i:s'),
-      'status' => 'pendiente'
-    ];
-
-    // Insertar en la base de datos usando el modelo
-    $this->averiaModel->insert($averiaData);
-
-    // Enviar notificación al WebSocket
-    Notify::send([
-      'type' => 'new_averia',
-      'averia' => $averiaData
-    ]);
-
-    return redirect()->to('/averias')
-      ->with('message', 'Avería registrada correctamente');
+    return view('averias/solucionados');
   }
 
-  /**
-   * API JSON para obtener averías pendientes
-   */
-  public function json()
+  public function agregarRegistro()
   {
-    $averias = $this->averiaModel
-      ->where('status', 'pendiente')
-      ->findAll();
+    $averia = new AveriaModel();
+    $this->response->setContentType('application/json');
+    $data = $this->request->getJSON();
 
-    return $this->response->setJSON($averias);
+    $newRecord = [
+      'cliente' => $data->cliente,
+      'problema' => $data->problema,
+      'fechahora' => $data->fechahora,
+      'status' => 'P'
+    ];
+
+    try {
+      $averia->insert($newRecord);
+
+      return $this->response->setJSON([
+        'success' => true,
+        'id' => $averia->getInsertID()
+      ]);
+    } catch (\Exception $e) {
+      return $this->response->setJSON([
+        'success' => false,
+        'message' => $e->getMessage()
+      ]);
+    }
+  }
+
+  public function listarAverias()
+  {
+    $averia = new AveriaModel();
+    $this->response->setContentType('application/json');
+
+    try {
+      $rows = $averia->where('status', 'P')
+        ->orderBy('id', 'DESC')
+        ->findAll();
+
+      return $this->response->setJSON($rows);
+    } catch (\Exception $e) {
+      return $this->response->setJSON([
+        'success' => false,
+        'message' => $e->getMessage()
+      ]);
+    }
+  }
+
+  // Nueva función para listar solucionados
+  public function listarSolucionados()
+  {
+    $averia = new AveriaModel();
+    $this->response->setContentType('application/json');
+
+    try {
+      $rows = $averia->where('status', 'S')
+        ->orderBy('id', 'DESC')
+        ->findAll();
+
+      return $this->response->setJSON($rows);
+    } catch (\Exception $e) {
+      return $this->response->setJSON([
+        'success' => false,
+        'message' => $e->getMessage()
+      ]);
+    }
+  }
+
+  // Nueva función para cambiar el status
+  public function cambiarStatus()
+  {
+    $averia = new AveriaModel();
+    $this->response->setContentType('application/json');
+    $data = $this->request->getJSON();
+
+    try {
+      $averia->update($data->id, [
+        'status' => $data->status
+      ]);
+
+      return $this->response->setJSON([
+        'success' => true,
+        'message' => 'Status actualizado'
+      ]);
+    } catch (\Exception $e) {
+      return $this->response->setJSON([
+        'success' => false,
+        'message' => $e->getMessage()
+      ]);
+    }
   }
 }

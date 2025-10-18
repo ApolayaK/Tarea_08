@@ -10,23 +10,23 @@ class AveriasSeeder extends Seeder
     {
         $data = [
             [
-                'cliente' => 'Carlos Ramos',
-                'problema' => 'Pantalla no enciende',
-                'fechahora' => date('Y-m-d H:i:s'),
-                'status' => 'pendiente'
+                "cliente" => "Roxana Cárdenas",
+                "problema" => "Internet lento",
+                "fechahora" => "2025-10-17 09:00:00",
+                "status" => "P"
             ],
             [
-                'cliente' => 'Lucía Torres',
-                'problema' => 'Error en el sistema de sonido',
-                'fechahora' => date('Y-m-d H:i:s'),
-                'status' => 'pendiente'
+                "cliente" => "Cristina Ávalos",
+                "problema" => "No tiene internet",
+                "fechahora" => "2025-10-17 09:15:00",
+                "status" => "P"
             ],
             [
-                'cliente' => 'Jorge Medina',
-                'problema' => 'Actualización fallida',
-                'fechahora' => date('Y-m-d H:i:s'),
-                'status' => 'solucionado'
-            ],
+                "cliente" => "Tania Mendoza",
+                "problema" => "El WIFI no funciona",
+                "fechahora" => "2025-10-17 10:00:00",
+                "status" => "P"
+            ]
         ];
 
         $this->db->table('averias')->insertBatch($data);

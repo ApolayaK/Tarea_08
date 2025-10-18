@@ -4,33 +4,38 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateAveriasTable extends Migration
+class AveriasMigrate extends Migration
 {
     public function up()
     {
         $this->forge->addField([
             'id' => [
                 'type' => 'INT',
-                'auto_increment' => true,
-                'unsigned' => true
+                'constraint' => 11,
+                'unsigned' => true,
+                'auto_increment' => true
             ],
             'cliente' => [
                 'type' => 'VARCHAR',
-                'constraint' => 50,
+                'constraint' => '50',
+                'null' => false
             ],
             'problema' => [
                 'type' => 'VARCHAR',
-                'constraint' => 100,
+                'constraint' => '100',
+                'null' => false
             ],
             'fechahora' => [
                 'type' => 'DATETIME',
+                'null' => false
             ],
             'status' => [
                 'type' => 'ENUM',
-                'constraint' => ['pendiente', 'solucionado'],
-                'default' => 'pendiente'
-            ],
+                'constraint' => ['P', 'S'],
+                'default' => 'P'
+            ]
         ]);
+
         $this->forge->addKey('id', true);
         $this->forge->createTable('averias');
     }
